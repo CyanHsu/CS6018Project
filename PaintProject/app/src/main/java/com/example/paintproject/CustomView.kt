@@ -42,16 +42,16 @@ class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    public fun draw(color: Color, e : MotionEvent, shape : String){
+    public fun draw(color: Color, e : MotionEvent, shape : String , size : Int){
         paint.color = color.toArgb()
         if(shape == "circle" ) {
             bitmapCanvas.drawCircle(
                 e.x * bitmap.width / width, e.y * bitmap.height / height,
-                50f, paint
+                5f * size, paint
             )
         }
         else if(shape == "rect"){
-            bitmapCanvas.drawRect(e.x  - 25f,e.y  - 50f, e.x  + 25f, e.y , paint)
+            bitmapCanvas.drawRect(e.x  - 5f * size,e.y  - 10f * size, e.x  + 5f * size, e.y , paint)
 
         }
 

@@ -24,6 +24,7 @@ class SimpleViewModel:ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     val color  = _color as LiveData<Color>
     var shape = "circle"
+    var size_ = 10
 
 
 
@@ -44,6 +45,11 @@ class SimpleViewModel:ViewModel() {
         with(Random.Default) {
             _color.value = color.toColor()
             mDefaultColor = color
+        }
+    }
+    fun setSize(size: Int){
+        with(Random.Default) {
+            size_ = size
         }
     }
 }

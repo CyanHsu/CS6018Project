@@ -9,19 +9,57 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Button
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.toColor
 import androidx.fragment.app.activityViewModels
 import com.example.paintproject.databinding.FragmentDrawBinding
 import yuku.ambilwarna.AmbilWarnaDialog
 
 
+
 class DrawFragment : Fragment() {
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sizeDialog() {
+        val dialog = activity?.let { Dialog(it) }
+        if (dialog != null) {
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.setCancelable(false)
+            dialog.setContentView(R.layout.size_layout)
+            dialog.window?.setLayout(800, 800)
+        }
+        val viewModel: SimpleViewModel by activityViewModels()
+        var seekBar = dialog?.findViewById(R.id.seekBar) as SeekBar
+        seekBar.max = 100
+        seekBar.min = 10
+        seekBar.progress = viewModel.size_
+        var sizeText = dialog.findViewById(R.id.sizeText) as TextView
+        sizeText.text = viewModel.size_.toString()
 
-    private fun showDialog(title: String) {
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+
+                sizeText.text = progress.toString();
+                viewModel.setSize(progress)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                dialog.dismiss()
+            }
+
+        })
+
+        dialog.show()
+    }
+
+    // Dialog for changing shape
+    private fun shapeDialog(title: String) {
         val dialog = activity?.let { Dialog(it) }
         if (dialog != null) {
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -48,7 +86,7 @@ class DrawFragment : Fragment() {
 
         dialog.show()
     }
-
+    // Dialogue for picking colors
     @OptIn(ExperimentalStdlibApi::class)
     fun openColorPickerDialogue() {
         val viewModel: SimpleViewModel by activityViewModels()
@@ -66,14 +104,7 @@ class DrawFragment : Fragment() {
 
                 @RequiresApi(Build.VERSION_CODES.O)
                 override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
-                    // change the mDefaultColor to
-                    // change the GFG text color as
-                    // it is returned when the OK
-                    // button is clicked from the
-                    // color picker dialog
-
                     viewModel.setColor(color)
-
                 }
             })
         colorPickerDialogue.show()
@@ -91,28 +122,23 @@ class DrawFragment : Fragment() {
         val binding = FragmentDrawBinding.inflate(inflater)
 
         val viewModel: SimpleViewModel by activityViewModels()
-//        mDefaultColor = viewModel.color.value!!
         binding.customView.setBitMap(viewModel.bitmap)
-//        binding.customView.drawBackGround()
-//        binding.customView.drawCircle(viewModel.color.value!!)
-
-//        viewModel.color.observe(viewLifecycleOwner){
-//
-//        }
 
         binding.colorBtn.setOnClickListener {
 
             openColorPickerDialogue()
         }
 
+
+        // The touch listener for drawing something
         binding.customView.setOnTouchListener { v, event ->
 
-            binding.customView.draw(viewModel.color.value!!,event,viewModel.shape)
+            binding.customView.draw(viewModel.color.value!!,event,viewModel.shape, viewModel.size_)
 
             true
         }
 
-
+        // Button back to home page
         binding.backBtn.setOnClickListener {
             val homeFragment = HomeFragment()
             val transaction = requireActivity().supportFragmentManager.beginTransaction()
@@ -122,12 +148,13 @@ class DrawFragment : Fragment() {
         }
 
         binding.shapeBtn.setOnClickListener {
-                showDialog("Shape")
+                shapeDialog("Shape")
 
         }
 
-
-
+        binding.sizeBtn.setOnClickListener {
+            sizeDialog()
+        }
 
 
         return binding.root
