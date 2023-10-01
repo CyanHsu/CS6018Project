@@ -2,8 +2,10 @@ package com.example.paintproject
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +15,7 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import com.example.paintproject.databinding.FragmentDrawBinding
 import yuku.ambilwarna.AmbilWarnaDialog
@@ -21,6 +24,7 @@ import yuku.ambilwarna.AmbilWarnaDialog
 
 class DrawFragment : Fragment() {
 
+    private val STORAGE_PERMISSION_CODE: Int = 1000
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sizeDialog() {
@@ -162,7 +166,39 @@ class DrawFragment : Fragment() {
             binding.customView.drawBackGround()
         }
 
+        // Locate the saveBtn and set up the OnClickListener
+        binding.saveBtn.setOnClickListener {
+            // Permission checking required apparently
+            checkAndRequestPermissions()
+            Log.d("DEBUG", "Save button clicked")
+        }
+
         return binding.root
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun checkAndRequestPermissions() {
+        val viewModel: SimpleViewModel by activityViewModels()
+        Log.d("DEBUG", "Checking permissions")
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("DEBUG", "Permission granted")
+            viewModel.saveBitmap(requireContext())
+        } else {
+            Log.d("DEBUG", "Permission not granted, requesting permission")
+            // request permission
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        val viewModel: SimpleViewModel by activityViewModels()
+        Log.d("DEBUG", "Permission result received")
+        if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+            Log.d("DEBUG", "Permission granted in result")
+            viewModel.saveBitmap(requireContext())
+        } else {
+            Log.d("DEBUG", "Permission denied in result")
+        }
     }
 
 }
