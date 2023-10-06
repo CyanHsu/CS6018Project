@@ -12,12 +12,14 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.fragment.app.activityViewModels
 
 class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  {
-    private lateinit var bitmap : Bitmap;
+    public lateinit var bitmap : Bitmap;
     private lateinit var bitmapCanvas : Canvas
     private val paint = Paint()
     private val rect: Rect by lazy { Rect(0,0,width, height) }
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.drawBitmap(bitmap, null, rect, paint)
@@ -72,6 +74,11 @@ class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  
     public fun setBitMap(b: Bitmap){
         bitmap = b
         bitmapCanvas = Canvas(bitmap)
+    }
+
+    fun setLoadBitmap(newBitmap: Bitmap) {
+        setBitMap(newBitmap)
+        invalidate()
     }
 
 }

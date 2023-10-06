@@ -1,12 +1,14 @@
 package com.example.paintproject
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.Dialog
-import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,12 +16,16 @@ import android.view.Window
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.paintproject.databinding.FragmentDrawBinding
 import yuku.ambilwarna.AmbilWarnaDialog
-
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
 
 
 class DrawFragment : Fragment() {
@@ -166,39 +172,67 @@ class DrawFragment : Fragment() {
             binding.customView.drawBackGround()
         }
 
-        // Locate the saveBtn and set up the OnClickListener
-        binding.saveBtn.setOnClickListener {
-            // Permission checking required apparently
-            checkAndRequestPermissions()
-            Log.d("DEBUG", "Save button clicked")
+        binding.optionsBtn.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Choose an option")
+                .setPositiveButton("Save") { _, _ ->
+                     // Save bitmap to storage'
+                    val savebitmap = binding.customView.bitmap
+                    Log.d("DEBUG SAVE", "Bitmap Retrieved: $savebitmap")
+
+                    val filePath = saveToStorage(savebitmap)
+                    Toast.makeText(context, "Bitmap saved to $filePath", Toast.LENGTH_SHORT)
+                        .show()
+                    Log.d("DEBUG SAVE", "Saved to $filePath")
+                }
+                .setNegativeButton("Load") { _, _ ->
+                    // Load bitmap from storage
+                    var loadedBitmap = loadFromStorage()
+                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
+
+                    if (loadedBitmap != null) {
+                        Log.d("DEBUG LOAD", "Setting bitmap to canvas")
+                        binding.customView.setLoadBitmap(loadedBitmap)
+                        Log.d("DEBUG LOAD", "Finished bitmap to canvas")
+                    }
+
+                    Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
+                }
+                .show()
         }
 
         return binding.root
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun checkAndRequestPermissions() {
-        val viewModel: SimpleViewModel by activityViewModels()
-        Log.d("DEBUG", "Checking permissions")
-        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("DEBUG", "Permission granted")
-            viewModel.saveBitmap(requireContext())
-        } else {
-            Log.d("DEBUG", "Permission not granted, requesting permission")
-            // request permission
+    fun saveToStorage(bitmap: Bitmap): String {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val file = File(picturesDirectory, "drawing.png")
+        try {
+            val stream: OutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            stream.flush()
+            stream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.d("DEBUG SAVE", "Error Saving Bitmap ", e)
         }
+        return file.absolutePath
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        val viewModel: SimpleViewModel by activityViewModels()
-        Log.d("DEBUG", "Permission result received")
-        if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-            Log.d("DEBUG", "Permission granted in result")
-            viewModel.saveBitmap(requireContext())
-        } else {
-            Log.d("DEBUG", "Permission denied in result")
+    fun loadFromStorage(): Bitmap? {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        if (picturesDirectory == null) {
+            Toast.makeText(context, "Failed to access storage", Toast.LENGTH_SHORT).show()
+            return null
         }
+        val file = File(picturesDirectory, "drawing.png")
+        if (!file.exists()) {
+            Toast.makeText(context, "No saved drawing found", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        val options = BitmapFactory.Options()
+        options.inMutable = true
+        return BitmapFactory.decodeFile(file.absolutePath, options)
     }
 
 }

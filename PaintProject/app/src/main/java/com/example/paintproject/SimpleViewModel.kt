@@ -20,8 +20,8 @@ import kotlin.random.Random
 class SimpleViewModel:ViewModel() {
 
     //Model
-    public val bitmap = Bitmap.createBitmap(1080, 2200, Bitmap.Config.ARGB_8888)
-    private val bitmapCanvas = Canvas(bitmap)
+    public var bitmap = Bitmap.createBitmap(1080, 2200, Bitmap.Config.ARGB_8888)
+    public val bitmapCanvas = Canvas(bitmap)
     //    private val paint = Paint()
 //    private val rect: Rect by lazy { Rect(0,0,width, height) }
     @RequiresApi(Build.VERSION_CODES.O)
@@ -59,33 +59,7 @@ class SimpleViewModel:ViewModel() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun saveBitmap(context: Context) {
-        Log.d("DEBUG", "Entered saveBitmap function")
-        val publicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val file = File(publicDirectory, "painting.png")
-
-        if (file.exists()) {
-            file.delete()
-        }
-
-        try {
-            Log.d("DEBUG", "Attempting to save bitmap at: ${file.absolutePath}")
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.flush()
-            out.close()
-            Log.d("DEBUG", "Bitmap successfully saved at: ${file.absolutePath}")
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e("ERROR", "Error while saving bitmap: ${e.message}")
-        }
-
-        val file2 = File("/storage/emulated/0/Pictures/painting.png")
-        if(file2.exists()) {
-            Log.d("DEBUG", "File exists at ${file.absolutePath}")
-        } else {
-            Log.e("ERROR", "File not found at ${file.absolutePath}")
-        }
+    fun resetBitmap() {
+        bitmap = Bitmap.createBitmap(1080, 2200, Bitmap.Config.ARGB_8888)
     }
 }

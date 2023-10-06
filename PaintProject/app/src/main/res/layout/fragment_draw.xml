@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".DrawFragment">
 
     <com.example.paintproject.CustomView
@@ -45,10 +46,10 @@
         android:text="Clean up" />
 
     <Button
-        android:id="@+id/saveBtn"
+        android:id="@+id/optionsBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
-        android:text="Save" />
+        android:text="File" />
 
 </FrameLayout>
