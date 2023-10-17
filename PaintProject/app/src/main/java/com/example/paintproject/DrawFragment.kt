@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.paintproject.databinding.FragmentDrawBinding
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.io.File
@@ -152,11 +153,12 @@ class DrawFragment : Fragment() {
 
         // Button back to home page
         binding.backBtn.setOnClickListener {
-            val homeFragment = HomeFragment()
-            val transaction = requireActivity().supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.fragmentContainerView, homeFragment, "home_tag")
-            transaction.addToBackStack(null)
-            transaction.commit()
+//            val homeFragment = HomeFragment()
+//            val transaction = requireActivity().supportFragmentManager.beginTransaction()
+//            transaction.replace(R.id.fragmentContainerView, homeFragment, "home_tag")
+//            transaction.addToBackStack(null)
+//            transaction.commit()
+            findNavController().navigate(R.id.homeFragment)
         }
 
         binding.shapeBtn.setOnClickListener {

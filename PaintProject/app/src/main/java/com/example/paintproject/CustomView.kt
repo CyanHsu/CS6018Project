@@ -20,7 +20,7 @@ class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  
     private val paint = Paint()
     private val rect: Rect by lazy { Rect(0,0,width, height) }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas?.drawBitmap(bitmap, null, rect, paint)
         if (canvas != null) {
