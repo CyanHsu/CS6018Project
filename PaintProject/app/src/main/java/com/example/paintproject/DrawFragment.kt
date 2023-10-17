@@ -176,7 +176,7 @@ class DrawFragment : Fragment() {
 
         binding.optionsBtn.setOnClickListener {
             AlertDialog.Builder(requireContext())
-                .setTitle("Choose an option")
+                .setTitle("Save the paining?")
                 .setPositiveButton("Save") { _, _ ->
                      // Save bitmap to storage'
                     val savebitmap = binding.customView.bitmap
@@ -187,19 +187,20 @@ class DrawFragment : Fragment() {
                         .show()
                     Log.d("DEBUG SAVE", "Saved to $filePath")
                 }
-                .setNegativeButton("Load") { _, _ ->
-                    // Load bitmap from storage
-                    var loadedBitmap = loadFromStorage()
-                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
-
-                    if (loadedBitmap != null) {
-                        Log.d("DEBUG LOAD", "Setting bitmap to canvas")
-                        binding.customView.setLoadBitmap(loadedBitmap)
-                        Log.d("DEBUG LOAD", "Finished bitmap to canvas")
-                    }
-
-                    Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
-                }
+//                .setNegativeButton("Load") { _, _ ->
+//                    // Load bitmap from storage
+//                    var loadedBitmap = loadFromStorage()
+//                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
+//
+//                    if (loadedBitmap != null) {
+//                        Log.d("DEBUG LOAD", "Setting bitmap to canvas")
+//                        viewModel.bitmap = loadedBitmap
+//                        binding.customView.setLoadBitmap(loadedBitmap)
+//                        Log.d("DEBUG LOAD", "Finished bitmap to canvas")
+//                    }
+//
+//                    Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
+//                }
                 .show()
         }
 
