@@ -75,7 +75,7 @@ fun AppNavi(vm: SimpleViewModel) {
 
         LoadButton(){
 //             Load bitmap from storage
-                    var loadedBitmap = loadFromStorage()
+                    val loadedBitmap = loadFromStorage()
                     Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
 
                     if (loadedBitmap != null) {
@@ -117,15 +117,18 @@ fun LoadButton(onClick: () -> Unit) {
     }
 }
 
-    fun loadFromStorage(): Bitmap? {
+    private fun loadFromStorage(): Bitmap? {
         val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        Log.d("DEBUG LOAD", picturesDirectory.toString())
         if (picturesDirectory == null) {
             Toast.makeText(context, "Failed to access storage", Toast.LENGTH_SHORT).show()
+            Log.d("DEBUG LOAD", "No such directory")
             return null
         }
         val file = File(picturesDirectory, "drawing.png")
         if (!file.exists()) {
             Toast.makeText(context, "No saved drawing found", Toast.LENGTH_SHORT).show()
+            Log.d("DEBUG LOAD", "No such file")
             return null
         }
         val options = BitmapFactory.Options()
