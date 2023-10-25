@@ -22,13 +22,13 @@
         android:id="@+id/colorBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pick Color" />
+        android:text="Color" />
 
     <Button
         android:id="@+id/shapeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_marginHorizontal="300px"
         android:text="Shape" />
 
     <Button
@@ -51,5 +51,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
         android:text="File" />
+
+    <Button
+        android:id="@+id/ballBtn"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="575px"
+        android:text="Ball" />
 
 </FrameLayout>

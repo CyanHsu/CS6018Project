@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.geometry.Offset
 import androidx.fragment.app.activityViewModels
 
 class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  {
@@ -54,6 +55,22 @@ class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs)  
         }
         else if(shape == "rect"){
             bitmapCanvas.drawRect(e.x  - 5f * size,e.y  - 10f * size, e.x  + 5f * size, e.y , paint)
+
+        }
+
+        invalidate()
+    }
+
+    public fun drawBySensor(color: Color, o:Offset, shape : String , size : Int){
+        paint.color = color.toArgb()
+        if(shape == "circle" ) {
+            bitmapCanvas.drawCircle(
+                o.x * bitmap.width / width, o.y * bitmap.height / height,
+                5f * size, paint
+            )
+        }
+        else if(shape == "rect"){
+            bitmapCanvas.drawRect(o.x  - 5f * size,o.y  - 10f * size, o.x  + 5f * size, o.y , paint)
 
         }
 

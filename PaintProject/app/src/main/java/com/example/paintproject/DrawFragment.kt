@@ -3,9 +3,13 @@ package com.example.paintproject
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
+import android.content.Context.SENSOR_SERVICE
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.Build
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -13,11 +17,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.compose.ui.geometry.Offset
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -30,10 +35,10 @@ import java.io.OutputStream
 
 
 class DrawFragment : Fragment() {
+    var drawWithSensor = false
 
     private val STORAGE_PERMISSION_CODE: Int = 1000
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun sizeDialog() {
         val dialog = activity?.let { Dialog(it) }
         if (dialog != null) {
@@ -114,7 +119,6 @@ class DrawFragment : Fragment() {
                     // clicked on cancel button
                 }
 
-                @RequiresApi(Build.VERSION_CODES.O)
                 override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
                     viewModel.setColor(color)
                 }
@@ -127,12 +131,13 @@ class DrawFragment : Fragment() {
 
 
     @SuppressLint("ClickableViewAccessibility")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentDrawBinding.inflate(inflater)
+        val sensorManager = activity?.getSystemService(SENSOR_SERVICE)  as SensorManager
+        val gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)!!
 
         val viewModel: SimpleViewModel by activityViewModels()
         binding.customView.setBitMap(viewModel.bitmap)
@@ -149,6 +154,16 @@ class DrawFragment : Fragment() {
             binding.customView.draw(viewModel.color.value!!,event,viewModel.shape, viewModel.size_)
 
             true
+        }
+
+
+
+
+        binding.ballBtn.setOnClickListener{
+            drawWithSensor = !drawWithSensor
+            if(drawWithSensor) {
+                drawWithOrientation(binding.customView, viewModel, gravitySensor, sensorManager)
+            }
         }
 
         // Button back to home page
@@ -172,6 +187,7 @@ class DrawFragment : Fragment() {
 
         binding.resetBtn.setOnClickListener{
             binding.customView.drawBackGround()
+            viewModel.resetPosition()
         }
 
         binding.optionsBtn.setOnClickListener {
@@ -207,6 +223,88 @@ class DrawFragment : Fragment() {
         return binding.root
     }
 
+    fun getScreenOrientation(context: Context): Int {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        return windowManager.defaultDisplay.rotation
+    }
+
+    fun drawWithOrientation(customView: CustomView, viewModel:SimpleViewModel, gravitySensor: Sensor,sensorManager: SensorManager){
+
+                getGravityData(gravitySensor,sensorManager, viewModel)
+
+//        var position = Offset(540f, 1100f)
+                   viewModel.offset.observe(requireActivity()){
+                       Log.d("start position: ", it.x.toString() + ", " + it.y.toString())
+//                       position =  Offset(position.x - it.x, position.y + it.y)
+                            if(drawWithSensor) {
+                                customView.drawBySensor(
+                                    viewModel.color.value!!,
+                                    viewModel.position, viewModel.shape, viewModel.size_
+                                )
+                            }
+
+                   }
+
+//                    position = when (o) {
+//                        1 -> {
+//                            Offset(
+//                                position.x + value[1] / 2,
+//                                position.y + value[0] / 2
+//                            )
+//                        }
+//                        3 -> {
+//                            Offset(
+//                                position.x - value[1] / 2,
+//                                position.y - value[0] / 2
+//                            )
+//                        }
+//                        else -> {
+//                            Offset(position.x - value[0]/2, position.y + value[1]/2)
+//                        }
+//                    }
+//                }
+//            }
+        }
+    private fun getGravityData(
+        gravitySensor: Sensor,
+        sensorManager: SensorManager,
+        viewModel: SimpleViewModel
+    ) {
+
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(p0: SensorEvent?) {
+                if (p0 != null) {
+//                        viewModel.setPosX(  p0.values[0])
+//                        viewModel.setPosY(  p0.values[0])
+                    if(drawWithSensor)
+                        viewModel.setOffset(Offset(p0.values[0], p0.values[1]))
+//                        val z = p0.values[2]
+//
+//                        emit(p0.values)
+                }
+            }
+
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+
+            }
+        }
+        if(drawWithSensor) {
+            sensorManager.registerListener(
+                listener,
+                gravitySensor,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+        }else{
+//            awaitClose {
+//                sensorManager.unregisterListener(listener)
+//            }
+        }
+
+    }
+
+    }
+
+
     fun saveToStorage(bitmap: Bitmap): String {
         val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         val file = File(picturesDirectory, "drawing.png")
@@ -222,21 +320,23 @@ class DrawFragment : Fragment() {
         return file.absolutePath
     }
 
-    fun loadFromStorage(): Bitmap? {
-        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        if (picturesDirectory == null) {
-            Toast.makeText(context, "Failed to access storage", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val file = File(picturesDirectory, "drawing.png")
-        if (!file.exists()) {
-            Toast.makeText(context, "No saved drawing found", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val options = BitmapFactory.Options()
-        options.inMutable = true
-        return BitmapFactory.decodeFile(file.absolutePath, options)
-    }
 
-}
+//    fun loadFromStorage(): Bitmap? {
+//        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+//        if (picturesDirectory == null) {
+//            Toast.makeText(context, "Failed to access storage", Toast.LENGTH_SHORT).show()
+//            return null
+//        }
+//        val file = File(picturesDirectory, "drawing.png")
+//        if (!file.exists()) {
+//            Toast.makeText(context, "No saved drawing found", Toast.LENGTH_SHORT).show()
+//            return null
+//        }
+//        val options = BitmapFactory.Options()
+//        options.inMutable = true
+//        return BitmapFactory.decodeFile(file.absolutePath, options)
+//    }
+
+
+
 

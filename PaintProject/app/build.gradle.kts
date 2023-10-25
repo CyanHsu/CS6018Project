@@ -105,4 +105,12 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.7.3")
     implementation("androidx.navigation:navigation-dynamic-features-fragment:2.7.3")
 
+
+    implementation("androidx.compose.runtime:runtime:1.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+
 }
