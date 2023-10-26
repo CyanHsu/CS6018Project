@@ -50,13 +50,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
-        android:text="File" />
+        android:text="Save" />
 
     <Button
         android:id="@+id/ballBtn"
         android:layout_width="95dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="575px"
-        android:text="Ball" />
+        android:text="Sensor" />
 
 </FrameLayout>

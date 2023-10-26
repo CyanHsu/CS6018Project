@@ -1,5 +1,6 @@
 package com.example.paintproject
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -52,70 +54,89 @@ class HomeFragment : Fragment() {
 //        }
 //        return binding.root    }
 
-}
+    }
 
-@Composable
-fun AppNavi(vm: SimpleViewModel) {
-    Column {
-        Text("Phase 2")
+    @Composable
+    fun AppNavi(vm: SimpleViewModel) {
+        Column {
+            Text("Little Painter")
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        DrawButton() {
-            vm.resetBitmap()
-            findNavController().navigate(R.id.drawFragment)
+            DrawButton() {
+                vm.resetBitmap()
+                findNavController().navigate(R.id.drawFragment)
+
+            }
+            Spacer(modifier = Modifier.padding(16.dp))
+
+            ResumeButton(){
+                findNavController().navigate(R.id.drawFragment)
+            }
+            Spacer(modifier = Modifier.padding(16.dp))
+
+            LoadButton(){
+    //             Load bitmap from storage
+                        val loadedBitmap = loadFromStorage()
+                        Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
+
+                        if (loadedBitmap != null) {
+                            Log.d("DEBUG LOAD", "Setting bitmap to canvas")
+                            vm.bitmap = loadedBitmap
+    //                        binding.customView.setLoadBitmap(loadedBitmap)
+                            Log.d("DEBUG LOAD", "Finished bitmap to canvas")
+                        }
+
+                        Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.drawFragment)
+            }
+            Spacer(modifier = Modifier.padding(16.dp))
+
+            ShareButton(){
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "image/*"
+                val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                val uri = context?.let { FileProvider.getUriForFile(it, "com.example.paintproject.fileprovider", File(picturesDirectory, "drawing.png")) }
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+                context?.startActivity(Intent.createChooser(shareIntent, "Share Image"))
+
+            }
 
         }
-        Spacer(modifier = Modifier.padding(16.dp))
+    }
 
-        ResumeButton(){
-            findNavController().navigate(R.id.drawFragment)
-        }
-        Spacer(modifier = Modifier.padding(16.dp))
+    @Composable
+    fun DrawButton(onClick: () -> Unit) {
 
-        LoadButton(){
-//             Load bitmap from storage
-                    val loadedBitmap = loadFromStorage()
-                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
-
-                    if (loadedBitmap != null) {
-                        Log.d("DEBUG LOAD", "Setting bitmap to canvas")
-                        vm.bitmap = loadedBitmap
-//                        binding.customView.setLoadBitmap(loadedBitmap)
-                        Log.d("DEBUG LOAD", "Finished bitmap to canvas")
-                    }
-
-                    Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.drawFragment)
+        Button(onClick = { onClick() }) {
+            Text("New Drawing")
         }
     }
-}
 
-@Composable
-fun DrawButton(onClick: () -> Unit) {
+    @Composable
+    fun ShareButton(onClick: () -> Unit) {
 
-    Button(onClick = { onClick() }) {
-        Text("New Drawing")
+        Button(onClick = { onClick() }) {
+            Text("Share saved file to other app")
+        }
     }
-}
 
+    @Composable
+    fun ResumeButton(onClick: () -> Unit) {
 
-@Composable
-fun ResumeButton(onClick: () -> Unit) {
-
-    Button(onClick = { onClick() }) {
-        Text("Resume drawing")
+        Button(onClick = { onClick() }) {
+            Text("Resume drawing")
+        }
     }
-}
 
 
-@Composable
-fun LoadButton(onClick: () -> Unit) {
+    @Composable
+    fun LoadButton(onClick: () -> Unit) {
 
-    Button(onClick = { onClick() }) {
-        Text("Load saved drawing")
+        Button(onClick = { onClick() }) {
+            Text("Load saved drawing")
+        }
     }
-}
 
     private fun loadFromStorage(): Bitmap? {
         val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
