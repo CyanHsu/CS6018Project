@@ -307,7 +307,7 @@ class DrawFragment : Fragment() {
 
     fun saveToStorage(bitmap: Bitmap): String {
         val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val file = File(picturesDirectory, "drawing.png")
+        val file = File(picturesDirectory, "drawing_${System.currentTimeMillis()}.png")
         try {
             val stream: OutputStream = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
