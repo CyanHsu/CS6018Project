@@ -1,0 +1,36 @@
+POST http://127.0.0.1:8080/drawings/new
+Content-Type: application/json
+
+{
+  "creatorId" : "testid112",
+  "name" : "My Drawing",
+  "filePath" : "file:///storage/emulated/0/Pictures/drawing_1698837626121.png"
+}
+
+###
+
+GET http://127.0.0.1:8080/drawings
+Accept: application/json
+
+###
+
+
+GET http://127.0.0.1:8080/drawings/testid111
+Accept: application/json
+
+###
+
+PUT http://127.0.0.1:8080/drawings/update
+Content-Type: application/json
+
+{
+  "id": 1
+}
+###
+DELETE http://127.0.0.1:8080/drawings/delete
+Content-Type: application/json
+
+{
+"id": 1
+}
+
