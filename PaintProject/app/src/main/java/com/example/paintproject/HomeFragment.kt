@@ -32,6 +32,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.paintproject.databinding.FragmentHomeBinding
 import java.io.File
+import com.google.firebase.auth.FirebaseAuth
+import java.util.concurrent.Executors
+
 
 class HomeFragment : Fragment() {
 
@@ -111,6 +114,18 @@ class HomeFragment : Fragment() {
 
             }
 
+            Spacer(modifier = Modifier.padding(16.dp))
+            if(vm.isGuest) {
+                LogInButton {
+                    findNavController().navigate(R.id.authFragment)
+                }
+            }else {
+                LogOutButton {
+                    FirebaseAuth.getInstance().signOut()
+                    findNavController().navigate(R.id.authFragment)
+                }
+            }
+
         }
     }
 
@@ -119,6 +134,30 @@ class HomeFragment : Fragment() {
 
         Button(onClick = { onClick() }) {
             Text("New Drawing")
+        }
+    }
+
+    @Composable
+    fun LogInButton(onClick: () -> Unit) {
+
+        Button(onClick = { onClick() }) {
+            Text("Back to Log in Page")
+        }
+    }
+
+    @Composable
+    fun LogOutButton(onClick: () -> Unit) {
+
+        Button(onClick = { onClick() }) {
+            Text("Log out and back to log in page")
+        }
+    }
+
+    @Composable
+    fun SignUpButton(onClick: () -> Unit) {
+
+        Button(onClick = { onClick() }) {
+            Text("Sign up")
         }
     }
 

@@ -35,6 +35,8 @@ class SimpleViewModel:ViewModel() {
 
     var position = Offset(540f, 1100f)
 
+    var isGuest = true
+
 
     fun pickColor(){
         with(Random.Default) {
