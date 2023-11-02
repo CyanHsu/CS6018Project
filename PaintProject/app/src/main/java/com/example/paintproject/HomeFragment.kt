@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
@@ -70,15 +72,12 @@ class HomeFragment : Fragment() {
     fun AppNavi(vm: SimpleViewModel) {
         Column(modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Little Painter",
-                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(top = 150.dp)
-            )
 
-            Spacer(modifier = Modifier.padding(16.dp))
-            Text("Start with", fontSize = 18.sp,)
+            Text("Start with",
+                fontSize = 18.sp,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 200.dp)
+            )
             Spacer(modifier = Modifier.padding(16.dp))
 
             DrawButton() {
@@ -157,20 +156,20 @@ class HomeFragment : Fragment() {
     }
     @Composable
     fun ShareButton(onClick: () -> Unit) {
-        FilledTonalButton(onClick = { onClick() }) {
+        FilledTonalButton(onClick = { onClick() }, shape = RoundedCornerShape(10)) {
             Text("Explore Gallery")
         }
     }
 
     @Composable
     fun LogOutButton(onClick: () -> Unit) {
-        ElevatedButton(onClick = { onClick() }) {
+        TextButton(onClick = { onClick() }) {
             Text("Log out & Back to Log in Page")
         }
     }
     @Composable
     fun LogInButton(onClick: () -> Unit) {
-        ElevatedButton(onClick = { onClick() }) {
+        TextButton(onClick = { onClick() }) {
             Text("Back to Log in Page")
         }
     }
