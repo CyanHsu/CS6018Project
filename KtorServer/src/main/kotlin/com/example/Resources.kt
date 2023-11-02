@@ -39,8 +39,14 @@ fun Application.configureResources() {
             val multipartData = call.receiveMultipart()
             multipartData.forEachPart { part ->
                 when(part){
+                    is PartData.FormItem ->{
+                        if(part.name == "uid"){
+                            uid = part.value
+                            }
+                    }
                     is PartData.FileItem -> {
                         filename = part.originalFileName.toString()
+
                         val fileData = part.streamProvider().readBytes()
                         val file = File("src/main/resources/${filename}")
 
@@ -49,7 +55,7 @@ fun Application.configureResources() {
                             newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
                                 Drawing.insertAndGetId {
                                     it[creatorId] = uid
-                                    it[fileName] = fileName
+                                    it[fileName] = filename
                                 }
                             }
                         }
@@ -62,8 +68,9 @@ fun Application.configureResources() {
         }
 
 //        // get drawing file
-        get("drawings/drawingFile") {
-            val filename = call.receive<DrawingName>().fileName
+        get("drawings/{filename}") {
+            val filename = call.parameters["filename"].toString()
+            println("Request file : $filename")
             val file = File("src/main/resources/${filename}")
             if(!file.exists()){
                 call.respondText ("No file found")
@@ -75,8 +82,8 @@ fun Application.configureResources() {
 
 
         // delete a drawing by
-        delete("drawings/delete"){ it ->
-            val filename = call.receive<DrawingName>().fileName
+        delete("drawings/delete/{filename}"){ it ->
+            val filename = call.parameters["filename"].toString()
             val file = File("src/main/resources/${filename}")
             if(file.exists()){
                 file.delete()
