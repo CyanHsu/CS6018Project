@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_authFragment"
             app:destination="@id/authFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_sharedDrawingFragment"
+            app:destination="@id/sharedDrawingFragment" />
     </fragment>
     <fragment
         android:id="@+id/drawFragment"
@@ -34,4 +37,8 @@
             android:id="@+id/action_authFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/sharedDrawingFragment"
+        android:name="com.example.paintproject.GalleryFragment"
+        android:label="SharedDrawingFragment" />
 </navigation>

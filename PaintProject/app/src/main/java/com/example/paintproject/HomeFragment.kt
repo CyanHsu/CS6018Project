@@ -112,12 +112,7 @@ class HomeFragment : Fragment() {
             Spacer(modifier = Modifier.padding(16.dp))
 
             ShareButton(){
-                val shareIntent = Intent(Intent.ACTION_SEND)
-                shareIntent.type = "image/*"
-                val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                val uri = context?.let { FileProvider.getUriForFile(it, "com.example.paintproject.fileprovider", File(picturesDirectory, "drawing.png")) }
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                context?.startActivity(Intent.createChooser(shareIntent, "Share Image"))
+                findNavController().navigate(R.id.sharedDrawingFragment)
 
             }
             Spacer(modifier = Modifier.padding(80.dp))

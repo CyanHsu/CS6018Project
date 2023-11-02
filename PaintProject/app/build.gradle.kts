@@ -1,3 +1,5 @@
+
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -43,7 +45,7 @@ android {
         kotlinCompilerExtensionVersion = "1.5.3"
     }
 }
-
+val ktor_version: String by project
 dependencies {
 
     implementation("androidx.core:core-ktx:1.10.1")
@@ -52,6 +54,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.test:rules:1.5.0")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
     debugImplementation("androidx.fragment:fragment-testing:1.6.1")
 
     testImplementation("junit:junit:4.13.2")
@@ -119,6 +122,24 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+
+//    implementation ("io.ktor:ktor-client-core:2.3.5")
+    implementation ("io.ktor:ktor-client-json:2.3.5")
+    implementation ("io.ktor:ktor-client-serialization-jvm:2.3.5")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.5")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
+
+    implementation ("io.ktor:ktor-client-json-jvm:2.3.5")
+
+    // ktor stuff
+    implementation("io.ktor:ktor-client-core:2.3.5")
+    implementation("io.ktor:ktor-client-cio:2.3.5")
+
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
+
+    implementation ("io.ktor:ktor-server-core:2.3.5")
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
 
 }

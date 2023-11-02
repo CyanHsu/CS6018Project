@@ -29,13 +29,39 @@ import android.widget.Toast
 import androidx.compose.ui.geometry.Offset
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.paintproject.databinding.FragmentDrawBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.entity.ContentType
+import io.ktor.client.HttpClient
+import io.ktor.client.request.post
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+
+import io.ktor.http.HttpHeaders
+import io.ktor.http.headersOf
+import io.ktor.util.InternalAPI
+import kotlinx.coroutines.launch
+
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.json.defaultSerializer
+import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.headers
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.*
+
 
 
 class DrawFragment : Fragment() {
@@ -197,6 +223,10 @@ class DrawFragment : Fragment() {
             viewModel.resetPosition()
         }
 
+        binding.shareBtn.setOnClickListener{
+            openFilePicker()
+        }
+
         binding.optionsBtn.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Save the paining?")
@@ -210,10 +240,7 @@ class DrawFragment : Fragment() {
                         .show()
                     Log.d("DEBUG SAVE", "Saved to $filePath")
                 }
-                .setNegativeButton("SAVE and Share") { _, _ ->
 
-
-                }
 //                    // Load bitmap from storage
 //                    var loadedBitmap = loadFromStorage()
 //                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
@@ -352,12 +379,13 @@ class DrawFragment : Fragment() {
 //        options.inMutable = true
 //        return BitmapFactory.decodeFile(file.absolutePath, options)
 //    }
-private fun openFilePicker() {
-    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-    intent.addCategory(Intent.CATEGORY_OPENABLE)
-    intent.type = "image/*"
-    startActivityForResult(intent, PICK_IMAGE_REQUEST)
-}
+
+    private fun openFilePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1
@@ -370,7 +398,19 @@ private fun openFilePicker() {
             val fileName_ = extractFileName(uri)
             Log.d("DEBUG LOAD", "File name: $fileName_")
             Log.d("DEBUG LOAD", "URI: $uri")
-             Toast.makeText(context, "Drawing share", Toast.LENGTH_SHORT).show()
+
+            val user = FirebaseAuth.getInstance().currentUser
+            val sendName = user?.uid.toString() + "_" + fileName_
+
+            val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val file = File(picturesDirectory,fileName_)
+            if (user != null) {
+                sendFileToServer(user.uid.toString(),sendName,file)
+            }
+
+
+            Toast.makeText(context, "$fileName_ has been shared" , Toast.LENGTH_SHORT).show()
+//            findNavController().navigate(R.id.drawFragment)
         }
     }
 
@@ -390,7 +430,56 @@ private fun openFilePicker() {
         return null
     }
 
-}
 
+
+    @OptIn(InternalAPI::class)
+    fun sendFileToServer(userID: String, fileName: String, file: File) {
+
+        val client = HttpClient(CIO)
+
+        lifecycleScope.launch {
+            try {
+                val response: HttpResponse = client.post("http://10.0.2.2:8080/drawings/new") {
+                    method = HttpMethod.Post
+
+
+                    // Set the request headers
+                    headers {
+                        append(HttpHeaders.ContentType, io.ktor.http.ContentType.MultiPart.FormData.withParameter("boundary", "WebAppBoundary").toString())
+                    }
+
+                    // Create the multipart/form-data content
+                    val formDataContent = MultiPartFormDataContent(
+                        formData {
+                            append("uid", userID)
+                            append(
+                                "image",file.readBytes(),
+                                Headers.build {
+                                    append(ContentType, "image/png")
+                                    append(HttpHeaders.ContentDisposition, "form-data; filename=\"$fileName.png\"")
+                                }
+
+                            )
+                        }
+                    )
+
+                    // Set the request body
+                    body = formDataContent
+                }
+
+                // Handle the response
+                println("Response status: ${response.status}")
+            } catch (e: Exception) {
+                // Handle exceptions
+                e.printStackTrace()
+            }
+
+        }
+
+    }
+
+}
+@Serializable
+data class FileUploadRequest(val userID: String, val fileName: String, val file: File)
 
 
