@@ -1,6 +1,7 @@
 package com.example
 
-import io.ktor.http.*
+import io.ktor.http.ContentDisposition.Companion.File
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.io.File
 
 fun Application.configureResources() {
     routing {
@@ -18,108 +20,83 @@ fun Application.configureResources() {
             call.respond(
                 newSuspendedTransaction(Dispatchers.IO) {
                     Drawing.selectAll()
-                            .orderBy(Drawing.lastModifiedDate, SortOrder.DESC)
                             .map {
                                 DrawingData(
-                                    it[Drawing.id].value,
                                     it[Drawing.creatorId],
-                                    it[Drawing.name],
-                                    it[Drawing.lastModifiedDate],
-                                    it[Drawing.filePath],
+                                    it[Drawing.fileName]
                                 )
                         }
                 }
             )
-        }
-
-        // get drawings created by user id order by last modified date descending
-        get("drawings/{userId}"){
-            val userId = call.parameters["userID"]
-            if (userId != null) {
-                val drawings = newSuspendedTransaction(Dispatchers.IO) {
-                    Drawing.select { Drawing.creatorId eq userId }
-                        .orderBy(Drawing.lastModifiedDate, SortOrder.DESC)
-                        .map {
-                            DrawingData(
-                                it[Drawing.id].value,
-                                it[Drawing.creatorId],
-                                it[Drawing.name],
-                                it[Drawing.lastModifiedDate],
-                                it[Drawing.filePath],
-                            )
-                        }
-                }
-                call.respond(drawings)
-            } else {
-                call.respondText("Invalid user ID", status = HttpStatusCode.BadRequest)
-            }
         }
 
 
         // post a new drawing
         post("drawings/new") {
-            val drawingData = call.receive<NewDrawing>()
-            newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
-                Drawing.insertAndGetId {
-                    it[creatorId] = drawingData.creatorId
-                    it[name] = drawingData.name
-                    it[lastModifiedDate] = System.currentTimeMillis()
-                    it[filePath] = drawingData.filePath
-                }
-            }
+//            val drawingData = call.receive<NewDrawing>()
+            var filename : String = ""
+            var uid : String = ""
+            val multipartData = call.receiveMultipart()
+            multipartData.forEachPart { part ->
+                when(part){
+                    is PartData.FileItem -> {
+                        filename = part.originalFileName.toString()
+                        val fileData = part.streamProvider().readBytes()
+                        val file = File("src/main/resources/${filename}")
 
-            call.respondText {  "Drawing : ${drawingData.name}, by: ${drawingData.creatorId}" }
-        }
-
-        // get drawing by id
-        get("drawings/drawingId") {
-            val drawingId = call.receive<DrawingId>().id
-            call.respond(
-                newSuspendedTransaction(Dispatchers.IO) {
-                    Drawing.select ( Drawing.id eq drawingId )
-                            .map {
-                                DrawingData(
-                                    it[Drawing.id].value,
-                                    it[Drawing.creatorId],
-                                    it[Drawing.name],
-                                    it[Drawing.lastModifiedDate],
-                                    it[Drawing.filePath],
-                                )
+                        if(!file.exists()){
+                            file.writeBytes(fileData)
+                            newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
+                                Drawing.insertAndGetId {
+                                    it[creatorId] = uid
+                                    it[fileName] = fileName
+                                }
                             }
-                }
-            )
-        }
+                        }
+                    }
 
-        // update a drawing by id
-        put("drawings/update")  { it ->
-            val drawingId = call.receive<DrawingId>().id
-            val updateTime = System.currentTimeMillis()
-            newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
-                Drawing.update({ Drawing.id eq drawingId }) { updateStatement ->
-                    updateStatement[lastModifiedDate] = updateTime
+                    else ->{}
                 }
             }
-            call.respondText("Drawing $drawingId updated")
+            call.respondText {  "Drawing : ${filename}, by: ${uid}" }
         }
 
-        // delete a drawing by id
+//        // get drawing file
+        get("drawings/drawingFile") {
+            val filename = call.receive<DrawingName>().fileName
+            val file = File("src/main/resources/${filename}")
+            if(!file.exists()){
+                call.respondText ("No file found")
+            }
+            else{
+                call.respondFile(file)
+            }
+        }
+
+
+        // delete a drawing by
         delete("drawings/delete"){ it ->
-            val drawingId = call.receive<DrawingId>().id
-            newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
-                Drawing.deleteWhere { Drawing.id eq drawingId }
+            val filename = call.receive<DrawingName>().fileName
+            val file = File("src/main/resources/${filename}")
+            if(file.exists()){
+                file.delete()
+                newSuspendedTransaction(Dispatchers.IO, DBSettings.db) {
+                    Drawing.deleteWhere { Drawing.fileName eq filename }
+                }
+                call.respondText("Drawing $filename has been deleted")
             }
-            call.respondText("Drawing $drawingId deleted")
+            else{
+                call.respondText("Drawing $filename not found")
+            }
         }
     }
 }
 
-// TODO: make thumbnail a Blob work
 @Serializable
-data class DrawingData(val id: Int, val creatorId: String, val fileName: String, val lastUpdatedTime : Long, val filePath: String)
+data class DrawingData(val creatorId: String, val fileName: String)
+
+
 
 @Serializable
-data class NewDrawing(val creatorId: String, val name: String, val filePath: String)
-
-@Serializable
-data class DrawingId( val id: Int)
+data class DrawingName( val fileName: String)
 
