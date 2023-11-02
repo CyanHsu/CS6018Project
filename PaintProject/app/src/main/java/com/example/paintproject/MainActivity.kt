@@ -70,7 +70,6 @@ fun AppContent() {
 
         AndroidView(
             factory = { context ->
-                // 创建一个 FragmentContainerView 并返回
                 FragmentContainerView(context).apply {
                     id = R.id.fragmentContainerView
 //                    fragmentManager.beginTransaction().replace(R.id.fragmentContainerView, HomeFragment()).commit()
