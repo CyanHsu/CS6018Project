@@ -21,7 +21,7 @@ class SimpleViewModel:ViewModel() {
     var mDefaultColor = 0
     val color  = _color as LiveData<Color>
     var shape = "circle"
-    var size_ = 10
+    var size_ = 5
 
     private val _screenOrientation = MutableLiveData<Int>()
     val screenOrientation = _screenOrientation as LiveData<Int>
