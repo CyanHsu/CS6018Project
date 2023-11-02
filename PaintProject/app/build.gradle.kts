@@ -67,9 +67,9 @@ dependencies {
     //Color plate
     implementation ("com.github.yukuku:ambilwarna:2.0.1")
 
-
-
-
+    //Animated Gif
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 
 
     implementation("androidx.core:core-ktx:1.12.0")
