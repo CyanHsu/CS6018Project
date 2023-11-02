@@ -16,14 +16,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -55,28 +62,28 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-//
-//        binding.clickBtn.setOnClickListener() {
-//            val drawFragment = DrawFragment()
-//            val transaction = requireActivity().supportFragmentManager.beginTransaction()
-//            transaction.replace(R.id.fragmentContainerView, drawFragment, "draw_tag")
-//            transaction.addToBackStack(null)
-//            transaction.commit()
-//        }
-//        return binding.root    }
     }
+
+
 
     @Composable
     fun AppNavi(vm: SimpleViewModel) {
-        Column {
-            Text("Little Painter")
+        Column(modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Little Painter",
+                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(top = 150.dp)
+            )
 
+            Spacer(modifier = Modifier.padding(16.dp))
+            Text("Start with", fontSize = 18.sp,)
             Spacer(modifier = Modifier.padding(16.dp))
 
             DrawButton() {
                 vm.resetBitmap()
                 findNavController().navigate(R.id.drawFragment)
-
             }
             Spacer(modifier = Modifier.padding(16.dp))
 
@@ -113,8 +120,8 @@ class HomeFragment : Fragment() {
                 context?.startActivity(Intent.createChooser(shareIntent, "Share Image"))
 
             }
+            Spacer(modifier = Modifier.padding(80.dp))
 
-            Spacer(modifier = Modifier.padding(16.dp))
             if(vm.isGuest) {
                 LogInButton {
                     findNavController().navigate(R.id.authFragment)
@@ -122,69 +129,66 @@ class HomeFragment : Fragment() {
             }else {
                 LogOutButton {
                     FirebaseAuth.getInstance().signOut()
+                    vm.isGuest = true
                     findNavController().navigate(R.id.authFragment)
                 }
             }
 
         }
     }
+    @Preview
+    @Composable
+    fun AppNaviPre(){
+        AppNavi(SimpleViewModel())
+    }
 
     @Composable
     fun DrawButton(onClick: () -> Unit) {
-
         Button(onClick = { onClick() }) {
             Text("New Drawing")
         }
     }
-
     @Composable
-    fun LogInButton(onClick: () -> Unit) {
-
+    fun ResumeButton(onClick: () -> Unit) {
         Button(onClick = { onClick() }) {
-            Text("Back to Log in Page")
+            Text("Resume Drawing")
+        }
+    }
+    @Composable
+    fun LoadButton(onClick: () -> Unit) {
+        Button(onClick = { onClick() }) {
+            Text("Load Drawing")
+        }
+    }
+    @Composable
+    fun ShareButton(onClick: () -> Unit) {
+        FilledTonalButton(onClick = { onClick() }) {
+            Text("Explore Gallery")
         }
     }
 
     @Composable
     fun LogOutButton(onClick: () -> Unit) {
-
-        Button(onClick = { onClick() }) {
-            Text("Log out and back to log in page")
+        ElevatedButton(onClick = { onClick() }) {
+            Text("Log out & Back to Log in Page")
+        }
+    }
+    @Composable
+    fun LogInButton(onClick: () -> Unit) {
+        ElevatedButton(onClick = { onClick() }) {
+            Text("Back to Log in Page")
         }
     }
 
     @Composable
     fun SignUpButton(onClick: () -> Unit) {
-
         Button(onClick = { onClick() }) {
             Text("Sign up")
         }
     }
 
-    @Composable
-    fun ShareButton(onClick: () -> Unit) {
-
-        Button(onClick = { onClick() }) {
-            Text("Share saved file to other app")
-        }
-    }
-
-    @Composable
-    fun ResumeButton(onClick: () -> Unit) {
-
-        Button(onClick = { onClick() }) {
-            Text("Resume drawing")
-        }
-    }
 
 
-    @Composable
-    fun LoadButton(onClick: () -> Unit) {
-
-        Button(onClick = { onClick() }) {
-            Text("Load saved drawing")
-        }
-    }
 
     private fun loadFromStorage(fileName: String): Bitmap? {
         Log.d("DEBUG LOAD", "Loading from storage: $fileName")
