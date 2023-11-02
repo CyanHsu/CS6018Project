@@ -107,7 +107,7 @@ class HomeFragment : Fragment() {
 //                }
 //
 //                Toast.makeText(context, "Bitmap loaded", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.drawFragment)
+//                findNavController().navigate(R.id.drawFragment)
             }
             Spacer(modifier = Modifier.padding(16.dp))
 

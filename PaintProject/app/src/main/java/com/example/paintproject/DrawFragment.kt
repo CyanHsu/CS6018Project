@@ -1,17 +1,21 @@
 package com.example.paintproject
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Context.SENSOR_SERVICE
+import android.content.Intent
 import android.graphics.Bitmap
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -55,7 +59,7 @@ class DrawFragment : Fragment() {
         var sizeText = dialog.findViewById(R.id.sizeText) as TextView
         sizeText.text = viewModel.size_.toString()
 
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
 
                 sizeText.text = progress.toString();
@@ -82,7 +86,7 @@ class DrawFragment : Fragment() {
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.setCancelable(false)
             dialog.setContentView(R.layout.shape_layout)
-            dialog.window?.setLayout(800,800)
+            dialog.window?.setLayout(800, 800)
         }
         val viewModel: SimpleViewModel by activityViewModels()
 
@@ -103,6 +107,7 @@ class DrawFragment : Fragment() {
 
         dialog.show()
     }
+
     // Dialogue for picking colors
     @OptIn(ExperimentalStdlibApi::class)
     fun openColorPickerDialogue() {
@@ -127,16 +132,13 @@ class DrawFragment : Fragment() {
     }
 
 
-
-
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentDrawBinding.inflate(inflater)
-        val sensorManager = activity?.getSystemService(SENSOR_SERVICE)  as SensorManager
+        val sensorManager = activity?.getSystemService(SENSOR_SERVICE) as SensorManager
         val gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)!!
 
         val viewModel: SimpleViewModel by activityViewModels()
@@ -151,7 +153,12 @@ class DrawFragment : Fragment() {
         // The touch listener for drawing something
         binding.customView.setOnTouchListener { v, event ->
 
-            binding.customView.draw(viewModel.color.value!!,event,viewModel.shape, viewModel.size_)
+            binding.customView.draw(
+                viewModel.color.value!!,
+                event,
+                viewModel.shape,
+                viewModel.size_
+            )
 
             true
         }
@@ -159,9 +166,9 @@ class DrawFragment : Fragment() {
 
 
 
-        binding.ballBtn.setOnClickListener{
+        binding.ballBtn.setOnClickListener {
             drawWithSensor = !drawWithSensor
-            if(drawWithSensor) {
+            if (drawWithSensor) {
                 drawWithOrientation(binding.customView, viewModel, gravitySensor, sensorManager)
             }
         }
@@ -177,7 +184,7 @@ class DrawFragment : Fragment() {
         }
 
         binding.shapeBtn.setOnClickListener {
-                shapeDialog("Shape")
+            shapeDialog("Shape")
 
         }
 
@@ -185,7 +192,7 @@ class DrawFragment : Fragment() {
             sizeDialog()
         }
 
-        binding.resetBtn.setOnClickListener{
+        binding.resetBtn.setOnClickListener {
             binding.customView.drawBackGround()
             viewModel.resetPosition()
         }
@@ -194,7 +201,7 @@ class DrawFragment : Fragment() {
             AlertDialog.Builder(requireContext())
                 .setTitle("Save the paining?")
                 .setPositiveButton("Save") { _, _ ->
-                     // Save bitmap to storage'
+                    // Save bitmap to storage'
                     val savebitmap = binding.customView.bitmap
                     Log.d("DEBUG SAVE", "Bitmap Retrieved: $savebitmap")
 
@@ -203,7 +210,10 @@ class DrawFragment : Fragment() {
                         .show()
                     Log.d("DEBUG SAVE", "Saved to $filePath")
                 }
-//                .setNegativeButton("Load") { _, _ ->
+                .setNegativeButton("SAVE and Share") { _, _ ->
+
+
+                }
 //                    // Load bitmap from storage
 //                    var loadedBitmap = loadFromStorage()
 //                    Log.d("DEBUG LOAD", "Bitmap Loaded: $loadedBitmap")
@@ -228,22 +238,27 @@ class DrawFragment : Fragment() {
         return windowManager.defaultDisplay.rotation
     }
 
-    fun drawWithOrientation(customView: CustomView, viewModel:SimpleViewModel, gravitySensor: Sensor,sensorManager: SensorManager){
+    fun drawWithOrientation(
+        customView: CustomView,
+        viewModel: SimpleViewModel,
+        gravitySensor: Sensor,
+        sensorManager: SensorManager
+    ) {
 
-                getGravityData(gravitySensor,sensorManager, viewModel)
+        getGravityData(gravitySensor, sensorManager, viewModel)
 
 //        var position = Offset(540f, 1100f)
-                   viewModel.offset.observe(requireActivity()){
-                       Log.d("start position: ", it.x.toString() + ", " + it.y.toString())
+        viewModel.offset.observe(requireActivity()) {
+            Log.d("start position: ", it.x.toString() + ", " + it.y.toString())
 //                       position =  Offset(position.x - it.x, position.y + it.y)
-                            if(drawWithSensor) {
-                                customView.drawBySensor(
-                                    viewModel.color.value!!,
-                                    viewModel.position, viewModel.shape, viewModel.size_
-                                )
-                            }
+            if (drawWithSensor) {
+                customView.drawBySensor(
+                    viewModel.color.value!!,
+                    viewModel.position, viewModel.shape, viewModel.size_
+                )
+            }
 
-                   }
+        }
 
 //                    position = when (o) {
 //                        1 -> {
@@ -264,7 +279,8 @@ class DrawFragment : Fragment() {
 //                    }
 //                }
 //            }
-        }
+    }
+
     private fun getGravityData(
         gravitySensor: Sensor,
         sensorManager: SensorManager,
@@ -276,7 +292,7 @@ class DrawFragment : Fragment() {
                 if (p0 != null) {
 //                        viewModel.setPosX(  p0.values[0])
 //                        viewModel.setPosY(  p0.values[0])
-                    if(drawWithSensor)
+                    if (drawWithSensor)
                         viewModel.setOffset(Offset(p0.values[0], p0.values[1]))
 //                        val z = p0.values[2]
 //
@@ -288,13 +304,13 @@ class DrawFragment : Fragment() {
 
             }
         }
-        if(drawWithSensor) {
+        if (drawWithSensor) {
             sensorManager.registerListener(
                 listener,
                 gravitySensor,
                 SensorManager.SENSOR_DELAY_NORMAL
             )
-        }else{
+        } else {
 //            awaitClose {
 //                sensorManager.unregisterListener(listener)
 //            }
@@ -302,11 +318,9 @@ class DrawFragment : Fragment() {
 
     }
 
-    }
-
-
     fun saveToStorage(bitmap: Bitmap): String {
-        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val picturesDirectory =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         val file = File(picturesDirectory, "drawing_${System.currentTimeMillis()}.png")
         Log.d("saving directory", picturesDirectory.toString())
         Log.d("file name", "drawing_${System.currentTimeMillis()}.png")
@@ -338,7 +352,45 @@ class DrawFragment : Fragment() {
 //        options.inMutable = true
 //        return BitmapFactory.decodeFile(file.absolutePath, options)
 //    }
+private fun openFilePicker() {
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+    intent.addCategory(Intent.CATEGORY_OPENABLE)
+    intent.type = "image/*"
+    startActivityForResult(intent, PICK_IMAGE_REQUEST)
+}
 
+    companion object {
+        private const val PICK_IMAGE_REQUEST = 1
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            val uri = data.data
+            val fileName_ = extractFileName(uri)
+            Log.d("DEBUG LOAD", "File name: $fileName_")
+            Log.d("DEBUG LOAD", "URI: $uri")
+             Toast.makeText(context, "Drawing share", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun extractFileName(uri: Uri?): String? {
+        if (uri != null) {
+            val cursor = requireActivity().contentResolver.query(uri, null, null, null, null)
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    val displayNameColumnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    val fileName = cursor.getString(displayNameColumnIndex)
+                    cursor.close()
+                    return fileName
+                }
+                cursor.close()
+            }
+        }
+        return null
+    }
+
+}
 
 
 

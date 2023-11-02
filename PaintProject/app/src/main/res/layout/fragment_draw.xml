@@ -59,4 +59,11 @@
         android:layout_marginHorizontal="575px"
         android:text="Sensor" />
 
+    <Button
+        android:id="@+id/shareBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200px"
+        android:text="Share" />
+
 </FrameLayout>
